@@ -59,7 +59,9 @@
                 // Replace these with your actual repo details and token
                 const owner = 'JagadeeshDevarakonda';
                 const repo = 'TestPages.github.io';
-                const token = 'YOUR_GITHUB_TOKEN'; // Use a secure method in production
+                // Fetch the public profile to get the token (Note: GitHub tokens are not available from public profiles)
+                // You must manually provide a GitHub token here. Public profiles do not expose tokens.
+                const token = '';
 
                 // Get latest workflow runs
                 const runsRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/deploy-qa.yml/runs`, {
