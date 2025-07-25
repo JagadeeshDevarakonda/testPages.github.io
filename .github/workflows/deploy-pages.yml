@@ -43,10 +43,11 @@ jobs:
 
       - name: Wait for QA Approval
         uses: actions/github-script@v7
-        # with:
-        #   script: |
-        # core.setOutput('approved', 'false')
         id: approval
+        with:
+          script: |
+            // Placeholder for QA approval step
+            console.log('Waiting for QA approval...')
 
   depoloy-qa:
     needs: deploy-current
