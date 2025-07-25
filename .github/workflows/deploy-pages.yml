@@ -51,14 +51,10 @@ jobs:
 
   depoloy-qa:
     needs: [deploy-current]
-    if: ${{ needs.deploy-current.outputs.approval == 'true' }}
     runs-on: ubuntu-latest
-    # if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
-    # environment:
-    #   name: QA
-    #   # url: https://your-qa-url.example.com
-    #   deployment_branch_policy:
-    #     protected_branches: true
+    environment:
+      name: qa
+      # url: https://your-qa-url.example.com
     steps:
       - name: QA Stage
-        run: echo "QA stage running after deploy and approval."
+        run: echo "QA stage running after deploy and approval.
