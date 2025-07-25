@@ -30,6 +30,7 @@ jobs:
           mkdir -p public
           cp root/page1.html public/
           cp root/page2.html public/
+          cp root/index.html public/
           
 
       # - name: Upload artifacts or GitHub Pages
