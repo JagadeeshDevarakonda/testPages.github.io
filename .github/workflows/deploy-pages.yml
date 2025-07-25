@@ -48,15 +48,15 @@ jobs:
         # core.setOutput('approved', 'false')
         id: approval
 
-    qa:
-      needs: deploy
-      runs-on: ubuntu-latest
-      if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
-      environment:
-        name: QA
-        url: https://your-qa-url.example.com
-        deployment_branch_policy:
-          protected_branches: true
-      steps:
-        - name: QA Stage
-          run: echo "QA stage running after deploy and approval."
+qa:
+  needs: deploy
+  runs-on: ubuntu-latest
+  if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
+  environment:
+    name: QA
+    url: https://your-qa-url.example.com
+    deployment_branch_policy:
+      protected_branches: true
+  steps:
+    - name: QA Stage
+      run: echo "QA stage running after deploy and approval."
