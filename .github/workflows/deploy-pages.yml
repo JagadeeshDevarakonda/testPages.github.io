@@ -24,6 +24,13 @@ jobs:
       
       - name: Build test pages site
         run: npm install & npm run build
+      
+      - name: Copy Static Pages
+        run: |
+          mkdir -p public
+          cp page1.html public/
+          cp page2.html public/
+          
 
       # - name: Upload artifacts or GitHub Pages
       #   uses: actions/upload-pages-artifact@v3
