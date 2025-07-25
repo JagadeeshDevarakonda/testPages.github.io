@@ -18,7 +18,7 @@
                 const doc = parser.parseFromString(html, 'text/html');
                 // Example: get all <h1> and <p> tags from page1.html
                 const items = [];
-                doc.querySelectorAll('h1, p').forEach(el => {
+                doc.querySelectorAll('h1, a').forEach(el => {
                     items.push(el.textContent);
                 });
                 // Populate dropdown
