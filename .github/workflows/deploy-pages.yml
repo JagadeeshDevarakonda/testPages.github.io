@@ -40,23 +40,23 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Wait for QA Approval
         uses: actions/github-script@v7
-        with:
-          script: |
-        core.setOutput('approved', 'false')
+        # with:
+        #   script: |
+        # core.setOutput('approved', 'false')
         id: approval
 
-      qa:
-        needs: deploy
-        runs-on: ubuntu-latest
-        if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
-        environment:
-      name: QA
-      url: https://your-qa-url.example.com
-      # Requires manual approval before running
-      deployment_branch_policy:
-        protected_branches: true
-        steps:
-      - name: QA Stage
-        run: echo "QA stage running after deploy and approval."
+    qa:
+      needs: deploy
+      runs-on: ubuntu-latest
+      if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
+      environment:
+        name: QA
+        url: https://your-qa-url.example.com
+        deployment_branch_policy:
+          protected_branches: true
+      steps:
+        - name: QA Stage
+          run: echo "QA stage running after deploy and approval."
