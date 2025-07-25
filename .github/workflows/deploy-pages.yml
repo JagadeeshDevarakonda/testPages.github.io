@@ -25,8 +25,8 @@ jobs:
       - name: Build test pages site
         run: npm install & npm run build
 
-      - name: Upload artifacts or GitHub Pages
-        uses: actions/upload-pages-artifact@v3
+      # - name: Upload artifacts or GitHub Pages
+      #   uses: actions/upload-pages-artifact@v3
       
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
