@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content from First Page</title>
+</html>
+<body>
+    <h1>Content from First Page</h1>
+    <select id="contentDropdown"> </select>
+    <script>
+        // Fetch content from page1.html and populate the dropdown
+        fetch('page1.html')
+            .then(response => response.text())
+            .then(html => {
+                // Create a DOM parser to extract content
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                // Example: get all <h1> and <p> tags from page1.html
+                const items = [];
+                doc.querySelectorAll('h1, p').forEach(el => {
+                    items.push(el.textContent);
+                });
+                // Populate dropdown
+                const dropdown = document.getElementById('contentDropdown');
+                items.forEach(item => {
+                    const option = document.createElement('option');
+                    option.textContent = item;
+                    dropdown.appendChild(option);
+                });
+            })
+            .catch(err => {
+                console.error('Error fetching page1.html:', err);
+            });
+    </script>
+</body>
+</html>
