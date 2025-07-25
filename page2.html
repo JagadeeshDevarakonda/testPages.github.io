@@ -8,6 +8,9 @@
 <body>
     <h1>Content from First Page</h1>
     <select id="contentDropdown"> </select>
+    <button id="approveBtn" style="border: 2px solid green; padding: 8px 16px; margin-right: 10px;">Approve</button>
+    
+    <button id="rejectBtn" style="border: 2px solid red; padding: 8px 16px;">Reject</button>
     <script>
         // Fetch content from page1.html and populate the dropdown
         fetch('page1.html')
@@ -32,6 +35,56 @@
             .catch(err => {
                 console.error('Error fetching page1.html:', err);
             });
+
+            document.getElementById('approveBtn').addEventListener('click', async function() {
+            alert('Approving content...');
+            const dropdown = document.getElementById('contentDropdown');
+            const selectedText = dropdown.options[dropdown.selectedIndex].text;
+
+            // Fetch page1.html and find the <a> tag with the selected text
+            try {
+                const response = await fetch('page1.html');
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const link = Array.from(doc.querySelectorAll('a')).find(a => a.textContent.trim() === selectedText.trim());
+                if (!link) {
+                    alert('No matching link found in page1.html');
+                    return;
+                }
+                const url = link.href;
+                window.open(url, '_blank');
+
+                // Example: Fetch latest GitHub Actions run and approve "deploy-qa"
+                // Replace these with your actual repo details and token
+                const owner = 'YOUR_GITHUB_OWNER';
+                const repo = 'YOUR_GITHUB_REPO';
+                const token = 'YOUR_GITHUB_TOKEN'; // Use a secure method in production
+
+                // Get latest workflow runs
+                const runsRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/deploy-qa.yml/runs`, {
+                    headers: { Authorization: `token ${token}` }
+                });
+                const runsData = await runsRes.json();
+                const latestRun = runsData.workflow_runs && runsData.workflow_runs[0];
+                if (!latestRun) {
+                    alert('No workflow runs found for deploy-qa');
+                    return;
+                }
+
+                // Approve the workflow run (if required)
+                // This endpoint is for manual approval jobs
+                await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/runs/${latestRun.id}/approve`, {
+                    method: 'POST',
+                    headers: { Authorization: `token ${token}` }
+                });
+
+                alert('Latest deploy-qa workflow approved!');
+            } catch (err) {
+                console.error(err);
+                alert('Error during approval process.');
+            }
+        });
     </script>
 </body>
 </html>
