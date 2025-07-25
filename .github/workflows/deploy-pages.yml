@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  deploy:
+  deploy-current:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -49,14 +49,14 @@ jobs:
         id: approval
 
   depoloy-qa:
-    needs: deploy
+    needs: deploy-current
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
-    environment:
-      name: QA
-      # url: https://your-qa-url.example.com
-      deployment_branch_policy:
-        protected_branches: true
+    # if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
+    # environment:
+    #   name: QA
+    #   # url: https://your-qa-url.example.com
+    #   deployment_branch_policy:
+    #     protected_branches: true
     steps:
       - name: QA Stage
         run: echo "QA stage running after deploy and approval."
