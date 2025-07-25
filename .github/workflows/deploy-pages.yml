@@ -57,4 +57,4 @@ jobs:
       # url: https://your-qa-url.example.com
     steps:
       - name: QA Stage
-        run: echo "QA stage running after deploy and approval.
+        run: echo "QA stage running after deploy and approval.""
