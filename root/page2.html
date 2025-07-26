@@ -52,9 +52,7 @@
                     alert('No matching link found in page1.html');
                     return;
                 }
-                const url = link.href;
-                window.open(url, '_blank');
-
+               
                 // Example: Fetch latest GitHub Actions run and approve "deploy-qa"
                 // Replace these with your actual repo details and token
                 const owner = 'JagadeeshDevarakonda';
@@ -86,6 +84,10 @@
                 });
 
                 alert('Latest deploy-qa workflow approved!');
+
+                const url = link.href;
+                window.open(url, '_blank');
+
             } catch (err) {
                 console.error(err);
                 alert('Error during approval process.');
