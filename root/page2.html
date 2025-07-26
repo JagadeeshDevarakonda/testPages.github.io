@@ -78,9 +78,14 @@
 
                 // Approve the workflow run (if required)
                 // This endpoint is for manual approval jobs
-                await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/runs/${latestRun.id}/approve`, {
+                await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/runs/${latestRun.id}/pending_deployments`, {
                     method: 'POST',
-                    headers: { Authorization: `token ${token}` }
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ state: "approved",comment: "Approved from Page 2" })
                 });
 
                 alert('Latest deploy-qa workflow approved!');
