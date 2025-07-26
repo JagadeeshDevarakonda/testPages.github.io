@@ -95,7 +95,7 @@
                         'Accept': 'application/vnd.github+json',
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ environment_ids=[environmentId] state: "approved", comment: "Approved from Page 2" })
+                    body: JSON.stringify({ environment_ids:[environmentId], state: "approved", comment: "Approved from Page 2" })
                 });
                 const approveData = await approveRes.json();
                 alert('Latest deploy-qa workflow approved!\nResponse: ' + JSON.stringify(approveData, null, 2));
