@@ -55,8 +55,8 @@
                
                 // Example: Fetch latest GitHub Actions run and approve "deploy-qa"
                 // Replace these with your actual repo details and token
-                const owner = 'HanumaDeva';
-                const repo = 'TestPages.github.io';
+                const owner = 'JagadeeshDevarakonda';
+                const repo = 'testPages.github.io';
                 // Fetch the public profile to get the token (Note: GitHub tokens are not available from public profiles)
                 // You must manually provide a GitHub token here. Public profiles do not expose tokens.
                 const token = prompt('Enter your GitHub personal access token:');
@@ -66,7 +66,7 @@
                 }
 
                 // Get latest workflow runs
-                const runsRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/deploy-qa.yml/runs`, {
+                const runsRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/deploy-pages.yml/runs`, {
                     headers: { Authorization: `token ${token}` }
                 });
                 const runsData = await runsRes.json();
