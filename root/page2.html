@@ -75,7 +75,17 @@
                     alert('No workflow runs found for deploy-qa');
                     return;
                 }
-
+                // Get environment id for "QA"
+                const envRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/environments`, {
+                    headers: { Authorization: `token ${token}` }
+                });
+                const envData = await envRes.json();
+                const qaEnv = envData.environments.find(env => env.name.toLowerCase() === 'qa');
+                if (!qaEnv) {
+                    alert('QA environment not found.');
+                    return;
+                }
+                const environmentId = qaEnv.id;
                 // Approve the workflow run (if required)
                 // This endpoint is for manual approval jobs
                 const approveRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/runs/${latestRun.id}/pending_deployments`, {
@@ -85,7 +95,7 @@
                         'Accept': 'application/vnd.github+json',
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ state: "approved", comment: "Approved from Page 2" })
+                    body: JSON.stringify({ environment_ids=[environmentId] state: "approved", comment: "Approved from Page 2" })
                 });
                 const approveData = await approveRes.json();
                 alert('Latest deploy-qa workflow approved!\nResponse: ' + JSON.stringify(approveData, null, 2));
