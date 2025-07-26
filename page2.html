@@ -78,15 +78,17 @@
 
                 // Approve the workflow run (if required)
                 // This endpoint is for manual approval jobs
-                await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/runs/${latestRun.id}/pending_deployments`, {
+                const approveRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/runs/${latestRun.id}/pending_deployments`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `token ${token}`,
                         'Accept': 'application/vnd.github+json',
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ state: "approved",comment: "Approved from Page 2" })
+                    body: JSON.stringify({ state: "approved", comment: "Approved from Page 2" })
                 });
+                const approveData = await approveRes.json();
+                alert('Latest deploy-qa workflow approved!\nResponse: ' + JSON.stringify(approveData, null, 2));
 
                 alert('Latest deploy-qa workflow approved!');
 
