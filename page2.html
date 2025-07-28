@@ -100,13 +100,13 @@
                 const ymlFileName = `PDP_Deployment${dateTimeStr}.yml`;
                 // Get current CST time plus 5 minutes
                 const nowUTC = new Date();
-                // CST is UTC-6
-                const futureDate = new Date(nowUTC.getTime() + 10 * 60000);
-                const minute = futureDate.getUTCMinutes();
-                const hour = futureDate.getUTCHours();
-                const day = futureDate.getUTCDate();
-                const month = futureDate.getUTCMonth() + 1;
-                const year = futureDate.getUTCFullYear();
+                // CDT is UTC-5 (Central Daylight Time)
+                const cdtOffset = -5 * 60;
+                const cdtDate = new Date(nowUTC.getTime() + (cdtOffset + nowUTC.getTimezoneOffset()) * 60000 + 5 * 60000);
+                const minute = cdtDate.getUTCMinutes();
+                const hour = cdtDate.getUTCHours();
+                const day = cdtDate.getUTCDate();
+                const month = cdtDate.getUTCMonth() + 1;
                 const schedule = `${minute} ${hour} ${day} ${month} *`;
                 let ymlContent = `name: PDP Deployment\non:\n  schedule:\n    - cron: '${schedule}'\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout\n        uses: actions/checkout@v3\n      - name: Deploy Pipelines\n        run: |\n`;
 
