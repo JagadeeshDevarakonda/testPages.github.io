@@ -1,7 +1,7 @@
 name: PDP Deployment
 on:
   schedule:
-    - cron: '21 21 28 7 *'
+    - cron: '30 17 * * *'
 jobs:
   deploy:
     runs-on: ubuntu-latest
