@@ -8,9 +8,19 @@
 <body>
     <h1>Content from First Page</h1>
     <select id="contentDropdown"> </select>
-    
+    <button id="addBtn" style="border: 2px solid blue; padding: 8px 16px; margin-right: 10px;">Add</button>
+    <script>
+        document.getElementById('addBtn').addEventListener('click', function() {
+            const dropdown = document.getElementById('contentDropdown');
+            const selectedText = dropdown.options[dropdown.selectedIndex]?.text;
+            if (selectedText) {
+                const lbl = document.getElementById('lblPipelines');
+                lbl.textContent += (lbl.textContent.trim() ? '\n' : '') + selectedText;
+            }
+        });
+    </script>
     <label id="lblPipelines" style="display:block; overflow:auto; max-height:40px; transition:max-height 0.3s; cursor:pointer;" onclick="this.style.maxHeight = this.style.maxHeight === '200px' ? '40px' : '200px';">
-        Pipelines
+        
     </label>
     <button id="approveBtn" style="border: 2px solid green; padding: 8px 16px; margin-right: 10px;">Approve</button>
     
