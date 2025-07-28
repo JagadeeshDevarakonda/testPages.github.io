@@ -8,6 +8,10 @@
 <body>
     <h1>Content from First Page</h1>
     <select id="contentDropdown"> </select>
+    
+    <label id="lblPipelines" style="display:block; overflow:auto; max-height:40px; transition:max-height 0.3s; cursor:pointer;" onclick="this.style.maxHeight = this.style.maxHeight === '200px' ? '40px' : '200px';">
+        Pipelines
+    </label>
     <button id="approveBtn" style="border: 2px solid green; padding: 8px 16px; margin-right: 10px;">Approve</button>
     
     <button id="rejectBtn" style="border: 2px solid red; padding: 8px 16px;">Reject</button>
@@ -37,79 +41,152 @@
             });
 
             document.getElementById('approveBtn').addEventListener('click', async function() {
-            alert('Approving content...');
-            const dropdown = document.getElementById('contentDropdown');
-            const selectedText = dropdown.options[dropdown.selectedIndex].text;
+                alert('Approving content...');
+                const lblPipelines = document.getElementById('lblPipelines');
+                // Read label value, split by new lines
+                const pipelineNames = lblPipelines.textContent.split('\n').map(line => line.trim()).filter(line => line);
 
-            // Fetch page1.html and find the <a> tag with the selected text
-            try {
-                const response = await fetch('page1.html');
-                const html = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const link = Array.from(doc.querySelectorAll('a')).find(a => a.textContent.trim() === selectedText.trim());
-                if (!link) {
-                    alert('No matching link found in page1.html');
+                // Fetch page1.html and get links for each pipeline name
+                let links = [];
+                try {
+                    const response = await fetch('page1.html');
+                    const html = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    pipelineNames.forEach(name => {
+                        const link = Array.from(doc.querySelectorAll('a')).find(a => a.textContent.trim() === name);
+                        if (link) links.push(link.href);
+                    });
+                } catch (err) {
+                    alert('Error fetching links from page1.html');
                     return;
                 }
-               
-                // Example: Fetch latest GitHub Actions run and approve "deploy-qa"
-                // Replace these with your actual repo details and token
+
+                // Get latest QA release
                 const owner = 'JagadeeshDevarakonda';
                 const repo = 'testPages.github.io';
-                // Fetch the public profile to get the token (Note: GitHub tokens are not available from public profiles)
-                // You must manually provide a GitHub token here. Public profiles do not expose tokens.
                 const token = prompt('Enter your GitHub personal access token:');
                 if (!token) {
-                    alert('GitHub token is required to approve the workflow.');
+                    alert('GitHub token is required.');
                     return;
                 }
 
-                // Get latest workflow runs
-                const runsRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/deploy-pages.yml/runs`, {
-                    headers: { Authorization: `token ${token}` }
-                });
-                const runsData = await runsRes.json();
-                const latestRun = runsData.workflow_runs && runsData.workflow_runs[0];
-                if (!latestRun) {
-                    alert('No workflow runs found for deploy-qa');
+                let latestReleaseTag = '';
+                try {
+                    const releasesRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases`, {
+                        headers: { Authorization: `token ${token}` }
+                    });
+                    const releases = await releasesRes.json();
+                    const qaRelease = releases.find(r => r.tag_name.toLowerCase().includes('qa'));
+                    if (qaRelease) latestReleaseTag = qaRelease.tag_name;
+                } catch (err) {
+                    alert('Error fetching QA release.');
                     return;
                 }
-                // Get environment id for "QA"
-                const envRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/environments`, {
-                    headers: { Authorization: `token ${token}` }
+
+                // Create new YML file content with schedule
+                const now = new Date();
+                const dateTimeStr = now.toISOString().replace(/[:.]/g, '-');
+                const ymlFileName = `PDP_Deployment${dateTimeStr}.yml`;
+                const schedule = `${now.getUTCMinutes()} ${now.getUTCHours()} * * *`;
+                let ymlContent = `name: PDP Deployment\non:\n  schedule:\n    - cron: '${schedule}'\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout\n        uses: actions/checkout@v3\n      - name: Deploy Pipelines\n        run: |\n`;
+
+                pipelineNames.forEach((name, idx) => {
+                    ymlContent += `          echo "Deploying ${name}"\n`;
+                    if (links[idx]) ymlContent += `          echo "Link: ${links[idx]}"\n`;
                 });
-                const envData = await envRes.json();
-                const qaEnv = envData.environments.find(env => env.name.toLowerCase() === 'qa');
-                if (!qaEnv) {
-                    alert('QA environment not found.');
-                    return;
+                ymlContent += `          echo "Latest QA Release: ${latestReleaseTag}"\n`;
+
+                // Push YML file to workflows folder
+                try {
+                    // Get default branch
+                    const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+                        headers: { Authorization: `token ${token}` }
+                    });
+                    const repoData = await repoRes.json();
+                    const branch = repoData.default_branch || 'main';
+
+                    // Get latest commit sha
+                    const refRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/ref/heads/${branch}`, {
+                        headers: { Authorization: `token ${token}` }
+                    });
+                    const refData = await refRes.json();
+                    const latestCommitSha = refData.object.sha;
+
+                    // Get tree sha
+                    const commitRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/commits/${latestCommitSha}`, {
+                        headers: { Authorization: `token ${token}` }
+                    });
+                    const commitData = await commitRes.json();
+                    const treeSha = commitData.tree.sha;
+
+                    // Create blob for yml file
+                    const blobRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/blobs`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `token ${token}`,
+                            'Accept': 'application/vnd.github+json'
+                        },
+                        body: JSON.stringify({
+                            content: ymlContent,
+                            encoding: 'utf-8'
+                        })
+                    });
+                    const blobData = await blobRes.json();
+
+                    // Create new tree with the yml file in .github/workflows/
+                    const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `token ${token}`,
+                            'Accept': 'application/vnd.github+json'
+                        },
+                        body: JSON.stringify({
+                            base_tree: treeSha,
+                            tree: [{
+                                path: `.github/workflows/${ymlFileName}`,
+                                mode: '100644',
+                                type: 'blob',
+                                sha: blobData.sha
+                            }]
+                        })
+                    });
+                    const treeData = await treeRes.json();
+
+                    // Create commit
+                    const commitMsg = `Add PDP deployment workflow: ${ymlFileName}`;
+                    const newCommitRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/commits`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `token ${token}`,
+                            'Accept': 'application/vnd.github+json'
+                        },
+                        body: JSON.stringify({
+                            message: commitMsg,
+                            tree: treeData.sha,
+                            parents: [latestCommitSha]
+                        })
+                    });
+                    const newCommitData = await newCommitRes.json();
+
+                    // Update branch reference
+                    await fetch(`https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${branch}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `token ${token}`,
+                            'Accept': 'application/vnd.github+json'
+                        },
+                        body: JSON.stringify({
+                            sha: newCommitData.sha
+                        })
+                    });
+
+                    alert(`Workflow file ${ymlFileName} created and pushed!`);
+                } catch (err) {
+                    console.error(err);
+                    alert('Error creating or pushing workflow file.');
                 }
-                const environmentId = qaEnv.id;
-                // Approve the workflow run (if required)
-                // This endpoint is for manual approval jobs
-                const approveRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/runs/${latestRun.id}/pending_deployments`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ environment_ids:[environmentId], state: "approved", comment: "Approved from Page 2" })
-                });
-                const approveData = await approveRes.json();
-                alert('Latest deploy-qa workflow approved!\nResponse: ' + JSON.stringify(approveData, null, 2));
-
-                alert('Latest deploy-qa workflow approved!');
-
-                const url = link.href;
-                window.open(url, '_blank');
-
-            } catch (err) {
-                console.error(err);
-                alert('Error during approval process.');
-            }
-        });
+            });
     </script>
 </body>
 </html>
